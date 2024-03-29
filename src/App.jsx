@@ -1,35 +1,47 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react";
+import "./App.css";
+import { socket } from "./utils";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [msg, setMsg] = useState("");
+  const [room, setRoom] = useState("");
+  const sendMessage = () => socket.emit("send_message", { message: msg });
 
+  useEffect(() => {
+    try {
+      socket.on("receive_message", (data) => {
+        alert(data.message);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
+  const ConnectRoom = () => {
+    socket.emit("join_room", room, (response) => {
+      console.log(response.status);
+      alert(response.msg);
+    });
+  };
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="App">
+      <div className="typeMessage">
+        <input
+          type="text"
+          placeholder="WriteYour Message"
+          value={msg}
+          onChange={(e) => setMsg(e.target.value)}
+        />
+        <button onClick={sendMessage}>Send</button>
+        <input
+          type="text"
+          placeholder="Room"
+          onChange={(e) => setRoom(e.target.value)}
+        />
+        <button onClick={ConnectRoom}>Connect Room</button>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
